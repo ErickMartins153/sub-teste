@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Mensagens</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-size: larger;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #container {
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            margin-top: 20px;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+        }
+        .mensagem {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .titulo {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>Notícias</header>
+    <div id="container">
+        <div>
+            <h2>Escreva o nome do canal do qual você quer receber notícias:</h2>
+            <form action="/subscribe" method="post">
+                <label for="canal">Nome do Canal:</label>
+                <input type="text" id="canal" name="canal" required>
+                <button type="submit" onclick="especificar()">Inscrever-se</button>
+            </form>
+        </div>
+        <div>
+            <h3>Notícias recebidas</h3>
+            <ul id="noticias-list"></ul>
+        </div>
+
+    </div>
+
+
+    <script>
+        let socket = new SockJS('/ws');
+        let stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            console.log('Conectado: ' + frame);
+            stompClient.subscribe('/topic/messages', function(messageOutput) {
+                showMessage(messageOutput.body);
+            });
+        });
+
+        function showMessage(noticia) {
+            let messageList = document.getElementById('noticias-list');
+            let li = document.createElement('li');
+            li.appendChild(document.createTextNode(noticia));
+            messageList.appendChild(li);
+        }
+    </script>
+</body>
+</html>

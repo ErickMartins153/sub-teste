@@ -8,22 +8,17 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 
 
-import java.util.Scanner;
-
 @Configuration
 public class RedisConfig {
-    Scanner scanner = new Scanner(System.in);
+    private RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+    private String canal;
 
 
     @Bean
     public RedisMessageListenerContainer redisContainer(RedisConnectionFactory connectionFactory,
                                                         MessageListenerAdapter listenerAdapter) {
-        System.out.println("Digite o canal que você deseja se inscrever: ");
-        String canal = scanner.nextLine();
-
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        
         container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, topic(canal));
 
         return container;
     }
@@ -32,8 +27,16 @@ public class RedisConfig {
     public MessageListenerAdapter listenerAdapter(MessageSubscriber subscriber) {
         return new MessageListenerAdapter(subscriber, "handleMessage");
     }
+    
 
     public ChannelTopic topic(String canal) {
         return new ChannelTopic(canal);
     }
+
+    public void subscribeToChannel(String canal, MessageListenerAdapter listenerAdapter) {
+        ChannelTopic topic = new ChannelTopic(canal);
+        container.addMessageListener(listenerAdapter, topic);
+        System.out.println("Inscrito no canal: " + canal);
+    }
+    
 }
